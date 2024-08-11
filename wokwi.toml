@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+elf = "build/c3lang-esp32-example.elf"
+firmware = "build/c3lang-esp32-example.bin"

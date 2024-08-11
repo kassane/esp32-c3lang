@@ -7,25 +7,67 @@ idf_component_register(SRCS "placeholder.c"
 
 # Based on zig-esp-idf-sample project
 
+set(EXT "tar.xz")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        set(TARGET_ARCH "x86_64")
+    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86")
+        set(TARGET_ARCH "x86")
+    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "aarch64")
+        set(TARGET_ARCH "aarch64")
+    else()
+        message(FATAL_ERROR "linux: Unsupported architecture")
+    endif()
+    set(TARGET_PLATFORM "linux-musl")
+elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        set(TARGET_ARCH "x86_64")
+    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86")
+        set(TARGET_ARCH "x86")
+    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "aarch64")
+        set(TARGET_ARCH "aarch64")
+    else()
+        message(FATAL_ERROR "windows: Unsupported architecture")
+    endif()
+    set(TARGET_PLATFORM "windows-gnu")
+    set(EXT "zip")
+elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+    if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        set(TARGET_ARCH "x86_64")
+    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+        set(TARGET_ARCH "aarch64")
+    else()
+        message(FATAL_ERROR "macos: Unsupported architecture")
+    endif()
+    set(TARGET_PLATFORM "macos")
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/lib/c3")
+    file(DOWNLOAD "https://github.com/kassane/esp32-c3lang/releases/download/v0.0.0/c3c-espressif-${TARGET_ARCH}-${TARGET_PLATFORM}.${EXT}"
+        "${CMAKE_BINARY_DIR}/c3c.${EXT}")
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        execute_process(
+            COMMAND powershell -Command "Expand-Archive -Path ${CMAKE_BINARY_DIR}/c3c.${EXT} -DestinationPath ${CMAKE_BINARY_DIR}"
+        )
+    else()
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/c3c.${EXT}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    endif()
+else()
+    message(STATUS "C3c already downloaded. Skipping C3 install.")
+endif()
+
 if(CONFIG_IDF_TARGET_ARCH_RISCV)
-    set(C3_TARGET "elf-riscv32") # generic
-    # if(CONFIG_IDF_TARGET_ESP32C6 OR CONFIG_IDF_TARGET_ESP32C5 OR CONFIG_IDF_TARGET_ESP32H2)
-    #     set(TARGET_CPU_MODEL "generic_rv32+m+a+c")
-    # elseif(CONFIG_IDF_TARGET_ESP32P4)
-    #     string(REGEX REPLACE "-none" "-eabihf" C3_TARGET ${C3_TARGET})
-    #     set(TARGET_CPU_MODEL "generic_rv32+m+a+c+f")
-    # else()
-    #     set(TARGET_CPU_MODEL "generic_rv32+m+c")
-    # endif()
+    # generic
+    set(C3_TARGET "elf-riscv32")
 elseif(CONFIG_IDF_TARGET_ARCH_XTENSA)
-    set(C3_TARGET "elf-xtensa") # generic
-    # if(CONFIG_IDF_TARGET_ESP32)
-    #     set(TARGET_CPU_MODEL "esp32")
-    # elseif(CONFIG_IDF_TARGET_ESP32S2)
-    #     set(TARGET_CPU_MODEL "esp32s2")
-    # else(CONFIG_IDF_TARGET_ESP32S3)
-    #     set(TARGET_CPU_MODEL "esp32s3")
-    # endif()
+    # esp32 (default)
+    set(C3_TARGET "elf-xtensa")
 else()
     message(FATAL_ERROR "Unsupported target ${CONFIG_IDF_TARGET}")
 endif()
@@ -39,7 +81,7 @@ endif()
 add_custom_target(c3_build
     COMMAND ${CMAKE_COMMAND} -E env
     "INCLUDE_DIRS=${include_dirs}"
-    c3c
+    ${CMAKE_BINARY_DIR}/c3c
     --no-entry
     --use-stdlib=no
     --link-libc=no
