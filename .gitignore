@@ -13,3 +13,4 @@ CMakeUserPresets.json
 build/
 build.sh
 .vscode/
+sdkconfig*

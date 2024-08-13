@@ -66,7 +66,7 @@ if(CONFIG_IDF_TARGET_ARCH_RISCV)
     # generic
     set(C3_TARGET "elf-riscv32")
 elseif(CONFIG_IDF_TARGET_ARCH_XTENSA)
-    # esp32 (default)
+    # generic
     set(C3_TARGET "elf-xtensa")
 else()
     message(FATAL_ERROR "Unsupported target ${CONFIG_IDF_TARGET}")
@@ -88,6 +88,9 @@ add_custom_target(c3_build
     static-lib
     -o libc3
     app.c3
+    wrappers/newlib.c3
+    wrappers/idf.c3
+    --single-module=yes
     --output-dir ${CMAKE_BINARY_DIR}/lib
     ${C3_BUILD_TYPE}
     --target ${C3_TARGET}
