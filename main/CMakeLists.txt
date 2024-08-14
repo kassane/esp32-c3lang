@@ -73,7 +73,7 @@ else()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(C3_BUILD_TYPE "-g0")
+    set(C3_BUILD_TYPE "-g")
 else()
     set(C3_BUILD_TYPE "-Oz")
 endif()
