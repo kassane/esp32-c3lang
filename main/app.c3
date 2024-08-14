@@ -40,3 +40,16 @@ fn void taskSample(void* arg) @export("myTask") {
 }
 
 int counter = 0;
+
+// ---- CUSTOM PANIC ---
+// This is a custom panic function that can be used to handle panics in the application.
+module std::core::builtin;
+
+def PanicFn = fn void(String message, String file, String function, uint line);
+
+PanicFn panic = &default_panic;
+
+fn void default_panic(String message, String file, String function, uint line)
+{
+	//TODO: Implement panic
+}
