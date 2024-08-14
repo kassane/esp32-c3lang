@@ -1,8 +1,8 @@
 # esp32-c3lang
 
-Testing [C3 language](http://www.c3-lang.org/) in esp32 target.
+Testing [C3 language](https://c3-lang.org/) in esp32 target.
 
-## Requirments
+## Requirements
 - [esp-idf](https://github.com/espressif/esp-idf)
 - [c3c](https://github.com/c3lang/c3c) forked to [espressif/llvm](https://github.com/espressif/llvm-project) backend
 
